@@ -1,0 +1,145 @@
+
+{% extends "layout.html" %}
+{% block mynav %}
+<div class="container">
+  <nav class="navbar navbar-inverse navbar-expand-lg  navbar-static-top navbar-dark bg-dark">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">State-based App</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li ><a href="{{ url_for('home') }}">Home</a></li>
+	    {% if current_user.is_authenticated %}
+	    <li><a  href="{{ url_for('account') }}">Account</a></li>
+	    <li class="active"><a  href="#">Capability Management</a></li>
+            <li><a  href="{{ url_for('logout') }}">Logout</a></li>
+	    {% else %}
+	     <li><a  href="{{ url_for('login') }}">Login</a></li>
+	    {% endif %}
+
+          </ul>
+        </div>
+      </div>
+</nav>
+</div>
+{% endblock %}
+
+{% block mycontent%}
+{{ super() }}
+<div class="container">
+
+   <select id="actions" name="action" class="select-action">
+	<option value= "delegated_caps"> Show Delegated Capabilities</option>
+	<option value= "new_delegation"> Delegate the Capability</option>
+   </select>
+   <hr class="green">
+   </br>
+   <dev id="del_caps">
+       {% for cap in c_caps %}
+           Capability id = {{cap.id}}; Capailities = [ {{cap.capability}} ]
+           <hr>
+        {% endfor %}
+        <hr class="red">
+        <div>
+            {% if c_caps|length >= 1 %}
+                <form action="{{ url_for('capmanage') }}" method=post>
+                   Revoke capability with id: 
+                   <select id="rev" name="rev" class="select-rev">
+	               {% for cap in c_caps %}
+	                   <option value= "{{ cap.id}}"> {{cap.id}}</option>
+	               {% endfor %}
+	           </select>
+	           <button>Submit</button>
+	        </form>
+	   {% endif %}
+    </dev>
+     <dev id="new_cap">
+      Delegatge the Capability
+    </dev>
+  
+</div>
+
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script type="text/javascript">
+  $( document ).ready(function() {
+        
+     var val = $("select.select-action").children("option:selected").val();
+     
+     if (val == "delegated_caps") {
+	  show_dev_id = "#del_caps"
+	  hide_dev_id = "#new_cap"
+     } else {
+          show_dev_id = "#new_cap"
+	  hide_dev_id = "#del_caps"
+     }
+     
+     $(show_dev_id).show()
+     $(hide_dev_id).hide()
+    
+	  
+  });
+
+  $(document).ready(function(){
+      $("select.select-action").change(function(){
+        val =   $( this ).val()
+	     
+        if (val == "delegated_caps") {
+	  show_dev_id = "#del_caps"
+	  hide_dev_id = "#new_cap"
+        } else {
+          show_dev_id = "#new_cap"
+	  hide_dev_id = "#del_caps"
+        }
+
+        $(show_dev_id).show()
+        $(hide_dev_id).hide()
+    });
+  });
+ </script>
+{% endblock %}
+
+<!--
+
+
+  <h1>Hey {{current_user.firstname }}!</h1>
+
+
+<div class="container">
+  <nav class="navbar navbar-inverse navbar-expand-lg  navbar-static-top navbar-dark bg-dark">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">State-based App</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+	   
+          </ul>
+        </div>
+	<div class="navbar-nav">
+	   {% if current_user.is_authenticated %}
+            <li><acclass="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+	    <li><a class="nav-item nav-link" href="#">Hi, {{ current_user.firstname }}</a></li>
+	    {% else %}
+	     <li><a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a></li>
+	    {% endif %}
+	</div>
+      </div>
+</nav>
+</div> -->

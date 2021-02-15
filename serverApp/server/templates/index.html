@@ -1,0 +1,299 @@
+
+{% extends "layout.html" %}
+{% block mynav %}
+<div class="container">
+  <nav class="navbar navbar-inverse navbar-expand-lg  navbar-static-top navbar-dark bg-dark">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">State-based App</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+	    {% if current_user.is_authenticated %}
+	    <li><a  href="{{ url_for('selectrawdata') }}">Select Raw Data</a></li>
+	    <li><a  href="{{ url_for('showdata') }}">Show Data</a></li>
+	     <li><a  href="{{ url_for('reset') }}">Reset</a></li>
+	    <li><a  href="{{ url_for('account') }}">Account</a></li>
+	    <li><a  href="{{ url_for('capmanage') }}">Capability Management</a></li>
+            <li><a  href="{{ url_for('logout') }}">Logout</a></li>
+	    <!-- <li><a  href="#"> {{ current_user.firstname }}</a></li> -->
+	    {% else %}
+	     <li><a  href="{{ url_for('login') }}">Login</a></li>
+	    {% endif %}
+
+          </ul>
+        </div>
+      </div>
+</nav>
+</div>
+{% endblock %}
+
+{% block mycontent%}
+{{ super() }}
+<div class="container">
+  {% if current_user.is_authenticated %}
+  <h3>Current State: {{ state_name }} </h3>
+  <!--<h4>Current Taint: {{ current_taint }} </h4>-->
+  </br>
+	    <div>
+	      <img id="myImg" src="static/graphs/{{current_state}}_sm_plot.png" alt="State Machine">
+
+		<!-- The Modal -->
+		<div id="myModal" class="modal">
+		  <span class="close">&times;</span>
+		  <img class="modal-content" id="img01">
+		  <div id="caption"></div>
+		</div>
+		</div>
+	    <div>
+  <hr class="green">
+  <div class="form-group">
+    <div>
+      <form action="{{ url_for('home') }}" method=post>
+	     <label for="actions">Choose an action:</label>
+	     
+	       <select id="actions" name="action" class="select-action">
+	       {% for act in actions %}
+		   <option value= "{{ act.name }}"> {{ act.alias }}</option>
+	       {% endfor %}
+	       </select>
+	     </div>
+
+	       <hr class="red">
+	     {% for act in actions %}
+            <div id="paramsdiv_{{ act.name }}">
+                <legend>Parameters</legend>
+                {% if act.parameters|length >= 1 %}
+                    <select id="selection-params-set_{{ act.name }}" name="selection-params-set_{{ act.name }}" class="select-params-set">
+                        {% for key, params in act.parameters.items()  %}
+                            <option value= "{{ key }}"> {{key[10:] | replace("_", " ")}}</option>
+                        {% endfor %}
+                    </select>
+                    </br>
+                    </br>
+                    {% for key, params in act.parameters.items() %}
+                        <fieldset id="param_set_{{ key }}">
+                            {% for param in params %}
+                                <label> {{ param.name }}:</label>
+                                <input type="text"
+                                    id="param__{{ act.name }}__paramset__{{key}}__{{ param.name }}"
+                                    name="param__{{ act.name }}__paramset__{{key}}__{{ param.name }}"> 
+                                {% if param.param_type.startswith('list') %} <span class="star"></span> {% endif %}
+                                <br>
+                            {% endfor %}
+                        </fieldset>
+                    {% endfor %}
+                {% endif %}
+            </div>
+	    
+	     {% endfor %}
+	     <hr class="red">
+	     <div id="notes"><span class="star">*</span>: key=value elements in a list should be saparated with a ','.<div>
+	     </br>
+   	     <div>
+	       {% if (actions is defined) and actions %}
+	          <button>Submit</button>
+	       {% else %}
+  	          <button disabled>Submit</button>
+	       {% endif %}
+   	     </div>
+      </form>
+    </div>
+  </div>
+ 
+  {% else %}
+  <h1>Please login first </h1>
+  {% endif %}
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+  $( document ).ready(function() {
+        
+        var val = $("select.select-action").children("option:selected").val();
+        console.log("1")
+    
+      par_id = "#paramsdiv_" + val;
+
+      prefix_id = "param_" + val
+
+      $('[id*="' + prefix_id + '"]').each(function(){
+	  $(this).prop('required',true);
+      });
+      
+	$('[id*="paramsdiv_"]').hide()
+	$(par_id).show()
+	
+	
+	/////////
+	var act_value = val;
+	var val_ps = document.getElementById("selection-params-set_"+act_value).value;;
+	par_id = "#param_set_" + val_ps;
+
+	  prefix_id = "param__" + act_value + "__paramset__" + val_ps
+
+	  //console.log("0 - act value is " + act_value)
+	  //console.log("0 - params set value is " + val_ps)
+	  $('[id*="param__"]').each(function(){
+	     $(this).removeAttr('required');
+	  })
+	  
+	  $('[id*="param_set_"]').hide()
+
+	  $(par_id).show()
+	  
+
+	  $('[id*="' + prefix_id + '"]').each(function(){
+          $(this).show();
+	      $(this).prop('required',true);
+	  });
+	  
+	  
+	  /////
+	  if (document.getElementsByClassName('star').length){
+           console.log("1-there is a star element")
+      }
+	  
+  });
+
+  $(document).ready(function(){
+      $("select.select-action").change(function(){
+        val =   $( this ).val()
+        par_id = "#paramsdiv_" + val;
+
+        prefix_id = "param_" + val
+
+        //console.log("2-par_id: " + par_id)
+        //console.log("2-prefix_id: " + prefix_id)
+        
+        $('[id*="param_"]').each(function(){
+            $(this).removeAttr('required');
+        })
+        
+        $('[id*="paramsdiv_"]').hide()
+
+        $(par_id).show()
+        
+        
+        
+
+        //var sel_value = $("select.select-params-set").children("option:selected").val();
+        var sel_value = document.getElementById("selection-params-set_"+ val).value;
+        //console.log("2 - the value is " + sel_value);
+        par_id = "#param_set_" + sel_value
+        $('[id*="param_set_"]').hide()
+        $(par_id).show()
+        
+        prefix_id = "param__" + val + "__paramset__" + sel_value
+        console.log("2 - the prefix value is " + prefix_id);
+        $('[id*="' + prefix_id + '"]').show()
+        $('[id*="' + prefix_id + '"]').each(function(){
+            $(this).prop('required',true);
+        });
+        if (document.getElementsByClassName('star').length){
+           console.log("2 -there is a star element")
+        }
+	  
+    });
+  });
+
+    $(document).ready(function(){
+      $("select.select-params-set").change(function(){
+        val =   $( this ).val()
+        var act_value = document.getElementById("actions").value;
+        //console.log("3-it is : " + act_value)
+        par_id = "#param_set_" + val;
+
+        prefix_id = "param__" + act_value + "__paramset__" + val
+
+        $('[id*="param__"]').each(function(){
+            $(this).removeAttr('required');
+        })
+        
+        $('[id*="param_set_"]').hide()
+        $('[id*="param_set' + val + '"]').show()
+
+        $(par_id).show()
+        
+
+        $('[id*="' + prefix_id + '"]').each(function(){
+            $(this).show();
+            $(this).prop('required',true);
+        });
+        
+        
+        var starElems = document.getElementsByClassName('star');
+        console.log("3 - " + starElems.length)
+        if (starElems.length){
+           console.log("3 -there is a star element")
+           //var prev = 
+        }
+        else
+        {
+        console.log("3 - no")
+        }
+  });
+  });
+  // Get the modal
+var modal = document.getElementById("myModal");
+
+// Get the image and insert it inside the modal - use its "alt" text as a caption
+var img = document.getElementById("myImg");
+var modalImg = document.getElementById("img01");
+var captionText = document.getElementById("caption");
+img.onclick = function(){
+  modal.style.display = "block";
+  modalImg.src = this.src;
+  captionText.innerHTML = this.alt;
+}
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() { 
+  modal.style.display = "none";
+}
+  
+</script>
+
+{% endblock %}
+
+<!--
+
+<div class="container">
+  <nav class="navbar navbar-inverse navbar-expand-lg  navbar-static-top navbar-dark bg-dark">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">State-based App</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+	   
+          </ul>
+        </div>
+	<div class="navbar-nav">
+	   {% if current_user.is_authenticated %}
+            <li><acclass="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+	    <li><a class="nav-item nav-link" href="#">Hi, {{ current_user.firstname }}</a></li>
+	    {% else %}
+	     <li><a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a></li>
+	    {% endif %}
+	</div>
+      </div>
+</nav>
+</div> -->

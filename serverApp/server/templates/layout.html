@@ -1,0 +1,26 @@
+{% extends "bootstrap/base.html" %}
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+{% endblock %}
+
+
+    {% block content %}
+    {% block mynav %}
+
+    {% endblock %}
+    {% block mycontent %}
+    <div class="container">
+         {% with messages = get_flashed_messages(with_categories=true) %}
+ 	   {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+		{% endwith %}
+    </div>
+    {% endblock %}
+    
+    {% endblock %}

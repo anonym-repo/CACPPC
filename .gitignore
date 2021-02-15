@@ -1,3 +1,17 @@
+*.aux
+*.blg
+*.bbl
+*.log
+*.synctex.gz
+*.dvi
+dev/serverApp/venv/*
+dev/serverApp/output_files/*
+*.svg
+*.png
+*.pyc
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

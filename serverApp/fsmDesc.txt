@@ -1,0 +1,20 @@
+NUMB 7
+NODE START FALSE 2
+NODE Subset_Selection FALSE 1
+NODE Data_Reduction FALSE 1
+NODE Noise_Count FALSE 1
+NODE Model_Training FALSE 1
+NODE Exclude_COEF FALSE 1
+NODE Test_Result TRUE 0
+EDGE START Subset_Selection act_21_subset subset Need_Raw_Data flase param_set_Column_Selection column string value string param_set_Specific_Data all_these listkv-string any_these listkv-string
+EDGE Subset_Selection Data_Reduction act_22_count count Need_Raw_Data flase
+EDGE Subset_Selection Test_Result act_26_test test Need_Raw_Data flase
+EDGE Data_Reduction Noise_Count act_23_noise_and_release noise_and_release Need_Raw_Data flase param_set_Noise_Characteristics epsilon float randomness integer
+EDGE Noise_Count Subset_Selection None subset_selection Need_Raw_Data flase
+EDGE Subset_Selection Model_Training act_24_learn learn Need_Raw_Data flase param_set_Data_Split train_test_split float rand integer C float
+EDGE Model_Training Model_Training act_24_learn learn Need_Raw_Data flase param_set_Data_Split train_test_split float rand integer C float
+EDGE Model_Training Exclude_COEF act_13_exclude_coef exclude_coef Need_Raw_Data flase param_set_Exclusion_parameters train_test_split float rand integer C float exclude_this_much integer
+EDGE Model_Training START TRANSFER re_start Need_Raw_Data flase
+EDGE Exclude_COEF Model_Training act_24_learn learn Need_Raw_Data flase param_set_Data_Split train_test_split float rand integer C float
+STRT START
+END
